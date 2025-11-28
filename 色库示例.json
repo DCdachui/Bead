@@ -1,0 +1,47 @@
+{
+  "name": "自定义色库示例",
+  "description": "这是一个自定义色库的JSON格式示例",
+  "colors": [
+    {
+      "code": "A4",
+      "name": "亮黄",
+      "hex": "#FFEB3B"
+    },
+    {
+      "code": "B5",
+      "name": "绿色",
+      "hex": "#4CAF50"
+    },
+    {
+      "code": "C5",
+      "name": "蓝色",
+      "hex": "#42A5F5"
+    },
+    {
+      "code": "D7",
+      "name": "紫色",
+      "hex": "#9C27B0"
+    },
+    {
+      "code": "E4",
+      "name": "粉色",
+      "hex": "#EC407A"
+    },
+    {
+      "code": "F5",
+      "name": "红色",
+      "hex": "#EF5350"
+    },
+    {
+      "code": "H2",
+      "name": "白色",
+      "hex": "#FFFFFF"
+    },
+    {
+      "code": "H7",
+      "name": "黑色",
+      "hex": "#000000"
+    }
+  ]
+}
+

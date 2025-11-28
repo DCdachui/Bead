@@ -1,0 +1,9 @@
+{
+  "name": "bead-converter",
+  "compatibility_date": "2025-11-28",
+  "main": "worker.js",
+  "assets": {
+    "directory": "./dist"
+  }
+}
+
