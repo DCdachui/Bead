@@ -20,10 +20,10 @@
         </div>
         <div class="ai-modal-body">
           <div class="ai-input-section">
-            <label>描述你想要生成的图案：</label>
+            <label>描述你自己的想法：</label>
             <textarea 
               v-model="aiPrompt" 
-              placeholder="例如：一只可爱的小猫、像素风格的城堡、马赛克风格的彩虹..."
+              placeholder="例如：想把图片调成暖色且突出主体；将构图换成像素风；只微调背景光效等。"
               class="ai-textarea"
               rows="3"
             ></textarea>
@@ -78,6 +78,13 @@
       <div class="left-panel">
         <!-- 上传区域 -->
         <div class="upload-section">
+          <div class="upload-tabs">
+            <button class="tab-btn active" @click="handleAIGenerateClick">
+              🤖 AI辅助(还没开发完QAQ)
+            </button>
+          </div>
+         
+
           <div class="upload-area" @click="fileInputRef?.click()">
             <input 
               ref="fileInputRef"
@@ -97,13 +104,6 @@
                 <span>点击更换图片</span>
               </div>
             </div>
-          </div>
-
-          <div class="ai-helper">
-            <button class="ai-trigger-btn" @click="handleAIGenerateClick">
-              🤖 AI生成
-            </button>
-            <small class="ai-hint">先上传图片，再使用AI辅助处理</small>
           </div>
         </div>
 
@@ -2665,7 +2665,7 @@ const handleMouseUp = () => {
 .upload-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   background: var(--bg-body);
   padding: 4px;
   border-radius: 8px;
@@ -2675,84 +2675,34 @@ const handleMouseUp = () => {
   flex: 1;
   padding: 10px 16px;
   border: none;
-  background: transparent;
-  color: var(--text-secondary);
   border-radius: 6px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .tab-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8f8f8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .tab-btn:hover {
-  color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .tab-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-panel);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 .tab-btn.active {
-  background: var(--primary-color);
-  color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
 }
 
-.ai-preview-area {
-  min-height: 300px;
-  border: 2px dashed var(--primary-color);
-  border-radius: var(--border-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-body);
-  transition: all 0.3s;
-}
 
-.ai-preview-area:hover {
-  border-color: var(--primary-active);
-  background: rgba(59, 130, 246, 0.05);
-}
-
-.ai-placeholder {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.ai-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.ai-trigger-btn {
-  margin-top: 16px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.ai-trigger-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-}
 
 .download-hero {
   margin: 15px 0;
