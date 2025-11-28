@@ -32,15 +32,15 @@
 
         <div class="ai-settings-section">
           <div class="setting-row">
-            <label>API Key (Google):</label>
+            <label>API Key:</label>
             <input 
               v-model="aiApiKey" 
               type="password" 
-              placeholder="输入你的Google API Key"
+              placeholder="输入你的 API Key"
               class="api-key-input"
             >
           </div>
-          <small class="hint-text">API Key将保存在本地，不会上传到服务器</small>
+        
         </div>
 
         <div class="ai-actions">

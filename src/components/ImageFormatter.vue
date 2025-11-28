@@ -1,7 +1,7 @@
 <template>
   <div class="format-section">
     <div class="slider-label" style="margin-bottom: 10px;">
-      <span>📐 图片格式化</span>
+      <span>图片格式化</span>
       <button 
         class="format-toggle-btn" 
         @click="showOptions = !showOptions"

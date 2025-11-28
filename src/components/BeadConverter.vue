@@ -45,15 +45,15 @@
 
           <div class="ai-settings-section">
             <div class="setting-row">
-              <label>API Key (Google):</label>
+              <label>API Key:</label>
               <input 
                 v-model="aiApiKey" 
                 type="password" 
-                placeholder="输入你的Google API Key"
+                placeholder="输入你的API Key"
                 class="api-key-input"
               >
             </div>
-            <small class="hint-text">API Key将保存在本地，不会上传到服务器</small>
+            <small class="hint-text">还没有对接AI API，暂时无法使用。</small>
           </div>
 
           <div class="ai-actions">
@@ -80,7 +80,7 @@
         <div class="upload-section">
           <div class="upload-tabs">
             <button class="tab-btn active" @click="handleAIGenerateClick">
-              🤖 AI辅助(还没开发完QAQ)
+               AI辅助
             </button>
           </div>
          
@@ -134,7 +134,7 @@
           <!-- 图片格式化选项 -->
           <div class="format-section" v-if="originalImage">
             <div class="slider-label" style="margin-bottom: 10px;">
-              <span>📐 图片格式化</span>
+              <span> 图片格式化</span>
               <button 
                 class="format-toggle-btn" 
                 @click="showImageFormatter = !showImageFormatter"
@@ -439,16 +439,16 @@
                   {{ statistics.dimensions.width }} × {{ statistics.dimensions.height }} 格
                 </div>
               </div>
-               <div class="download-hero">
-                <button @click="downloadOneClick" class="action-card hero-btn" :disabled="isDownloading">
-                  <span class="action-main">📥 一键下载</span>
-                  <small>{{ isDownloading ? '正在生成600DPI模板...' : '自动生成600DPI模板' }}</small>
-                </button>
-              </div>
+              <div class="download-hero">
+               <button @click="downloadOneClick" class="action-card hero-btn" :disabled="isDownloading">
+                 <span class="action-main">📥 一键下载</span>
+                 <small>{{ isDownloading ? '正在生成模板...' : '自动生成200DPI模板' }}</small>
+               </button>
+             </div>
               <div class="download-grid">
                 <button @click="downloadImage" class="action-card primary">
                   <span class="action-main">📥 下载效果图</span>
-                  <small>用于展示和分享</small>
+                  <small  >用于展示和分享</small>
                 </button>
 
                 <button 
@@ -456,18 +456,11 @@
                   @click="downloadTemplate" 
                   class="action-card secondary"
                 >
-                  <span class="action-main">📥 下载模板（200DPI）</span>
+                  <span class="action-main">📥 下载模板</span>
+                  <!-- （200DPI） -->
                   <small>默认打印清晰度</small>
                 </button>
 
-                <button 
-                  v-if="generateTemplate" 
-                  @click="downloadHighResTemplate" 
-                  class="action-card accent"
-                >
-                  <span class="action-main">📥 下载打印模板（600DPI）</span>
-                  <small>高清输出，适合放大打印</small>
-                </button>
               </div>
 
             
@@ -493,7 +486,6 @@ const MIN_BEAD_COUNT = 20;
 const MAX_BEAD_COUNT = 500;
 const MAX_GRID_DIMENSION = 500;
 const DEFAULT_TEMPLATE_DPI = 200;
-const HIGH_TEMPLATE_DPI = 600;
 const MIN_CLUSTER_COLORS = 8;
 const MAX_CLUSTER_COLORS = 48;
 const resolutionOptions = [32, 52, 64, 96, 128, 160, 200];
@@ -542,9 +534,6 @@ const templateCanvasUrl = ref('');
 const showTemplate = ref(false);
 const enableColorClustering = ref(false);
 const isDownloading = ref(false);
-const templateRequestResolvers = new Map();
-let templateRequestIdCounter = 0;
-const TEMPLATE_REQUEST_TIMEOUT = 15000;
 
 // 图片格式化
 const showImageFormatter = ref(false);
@@ -670,70 +659,19 @@ watch(templateHeight, (val) => {
   debouncedConvert();
 });
 
-const resolveTemplateRequest = (requestId, bitmap) => {
-  const pending = templateRequestResolvers.get(requestId);
-  if (!pending) return;
-  clearTimeout(pending.timeoutId);
-  pending.resolve(bitmap);
-  templateRequestResolvers.delete(requestId);
-};
-
-const rejectTemplateRequest = (requestId, error) => {
-  const pending = templateRequestResolvers.get(requestId);
-  if (!pending) return;
-  clearTimeout(pending.timeoutId);
-  pending.reject(error);
-  templateRequestResolvers.delete(requestId);
-};
-
-const requestTemplateExport = (dpi) => {
-  if (!worker.value) return Promise.reject(new Error('转换服务尚未就绪'));
-  const width = resolvedWidth.value;
-  const height = expectedHeight.value;
-  if (!width || !height) return Promise.reject(new Error('请先设置有效的宽高格数'));
-  const requestId = ++templateRequestIdCounter;
-  return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      rejectTemplateRequest(requestId, new Error('生成模板超时，请重试'));
-    }, TEMPLATE_REQUEST_TIMEOUT);
-    templateRequestResolvers.set(requestId, { resolve, reject, timeoutId });
-    worker.value.postMessage({
-      type: 'GENERATE_TEMPLATE',
-      requestId,
-      payload: {
-        dpi,
-        backgroundCode: backgroundCode.value,
-        width,
-        height,
-        templateWidth: templateWidth.value,
-        templateHeight: templateHeight.value
-      }
-    });
-  });
-};
 
 // --- Worker 初始化 ---
 const initWorker = () => {
   worker.value = new BeadWorker();
   worker.value.onmessage = (e) => {
-    const { type, payload, error, requestId } = e.data;
+    const { type, payload, error } = e.data;
     if (type === 'ERROR') {
       console.error('Worker Error:', error);
-      if (requestId && templateRequestResolvers.has(requestId)) {
-        rejectTemplateRequest(requestId, new Error(error));
-      } else {
-        alert('转换出错: ' + error);
-        isConverting.value = false;
-      }
+      alert('转换出错: ' + error);
       isConverting.value = false;
       return;
     }
     
-    if (type === 'TEMPLATE_READY' && requestId) {
-      resolveTemplateRequest(requestId, payload?.templateBitmap, payload?.dpi);
-      return;
-    }
-
     if (type === 'SUCCESS') {
       if (payload.displayBitmap) {
         drawBitmapToCanvas(resultCanvasRef.value, payload.displayBitmap);
@@ -1140,30 +1078,14 @@ const downloadTemplate = () => {
   saveCanvasAsPng(templateCanvasRef.value, `拼豆模板_${Date.now()}_${width}x${height}_${DEFAULT_TEMPLATE_DPI}DPI.png`);
 };
 
-const downloadHighResTemplate = async () => {
-  if (!generateTemplate.value) return alert('请先勾选生成模板');
-  if (!hasResult.value) return alert('请先完成转换');
-  try {
-    const bitmap = await requestTemplateExport(HIGH_TEMPLATE_DPI);
-    const width = resolvedWidth.value;
-    const height = expectedHeight.value || width;
-    saveBitmapAsPng(bitmap, `拼豆模板_${Date.now()}_${width}x${height}_${HIGH_TEMPLATE_DPI}DPI.png`);
-  } catch (err) {
-    alert(err.message || '生成高清模板失败，请稍后重试');
-  }
-};
-
-// ✨ 一键下载：同时下载效果图 + 高清模板
+// ✨ 一键下载：同时下载效果图 + 模板
 const downloadOneClick = async () => {
   if (!hasResult.value) return alert('请先完成转换');
   try {
     isDownloading.value = true;
     downloadImage();
     if (generateTemplate.value) {
-      const bitmap = await requestTemplateExport(HIGH_TEMPLATE_DPI);
-      const width = resolvedWidth.value;
-      const height = expectedHeight.value || width;
-      saveBitmapAsPng(bitmap, `拼豆模板_${Date.now()}_${width}x${height}_${HIGH_TEMPLATE_DPI}DPI.png`);
+      downloadTemplate();
     }
   } catch (err) {
     alert(err.message || '下载失败，请重试');
@@ -2138,6 +2060,20 @@ const handleMouseUp = () => {
   gap: 12px;
 }
 
+.download-grid .action-card {
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.download-grid .action-card .action-main {
+  font-size: 1.05rem;
+}
+
+.download-grid .action-card small {
+  text-align: center;
+}
+
 .action-card {
   border: none;
   border-radius: 14px;
@@ -2156,7 +2092,18 @@ const handleMouseUp = () => {
 
 .action-card small {
   font-weight: 500;
-  color: var(--text-secondary);
+  color: rgba(15, 23, 42, 0.75);
+}
+
+[data-theme="dark"] .action-card small {
+  color: rgba(248, 250, 252, 0.85);
+}
+
+.action-card.primary small,
+.action-card.secondary small,
+.action-card.accent small,
+.action-card.ultra small {
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .action-card:hover:not(:disabled) {
@@ -2731,7 +2678,7 @@ const handleMouseUp = () => {
 }
 
 .hero-btn small {
-  opacity: 0.9;
-  font-weight: 400;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
 }
 </style>
